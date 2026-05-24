@@ -60,7 +60,7 @@ During deployment, you'll need to fill in two fields:
 
 Click the button below. It will create all cloud resources inside your Cloudflare account.
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/nexknit-dev/nexknit-gateway)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/nexknit-dev/nexknit-worker)
 
 > Due to occasional Cloudflare glitches, if the one-click deploy fails or says the repo is unreachable, scroll down to the FAQ section for a manual deployment guide. We sincerely apologize for this.
 > If you need to know our exact security model, scroll down to the "Architecture Design & Characteristics" section. Additionally, the repository deployed via the button will be linked to our main repository and automatically built on subsequent pushes. If you need to maintain a stable version, you can fork the repository and deploy from the Cloudflare Worker page, clone the repository and deploy locally, or refer to FAQ.8.
@@ -129,7 +129,7 @@ That URL is the address of the deployed Worker. Then run the following and enter
 
 You'll see logs like:
 
-```bash
+```bash 
  ⛅️ wrangler 4.93.0
  ───────────────────
  √ Enter a secret value: ... *****

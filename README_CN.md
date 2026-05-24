@@ -60,7 +60,7 @@
  
 点击下面的按钮，它会在你的 Cloudflare 账户里创建好所有云端资源。
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/nexknit-dev/nexknit-gateway)
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/nexknit-dev/nexknit-worker)
 
 > 由于Cloudflare的偶发性故障，如果您没能一键部署或提示无法访问储存库，请向下到QA中参考手动部署的方案。我们对此深感歉意。
 > 如果您需要知道我们确切的安全模型，请向下查找“架构设计与特性”章节。另外，通过按钮直接部署的仓库会和我们的主仓库链接并在随后的每一次push中自动构建，如果您需要保持一个稳定的版本，您可以fork仓库并从Cloudflare Worker页面部署，clone仓库并从本地部署，或向下查找QA.8。
@@ -181,7 +181,7 @@ python main_with_exmp.py --url https://<Worker Name>.<Cloudflare Account>.worker
 如果您需要将其集成到您的项目，例如AI实验，请参考one_shot_template.py文件。其中的注释会帮助您理解如何集成我们的采集器。需要注意的是，我们的协议组成如下：
 
 - `类型|状态名称|状态值`
-- 类型：`I`/ `Index`表示追加Number，`T` / `Trend`表示非覆盖Number，`L`/`Log`表示追加String，`S`/`Status`表示覆盖String。
+- 类型：`I`/ `Index`表示索引数值（如磁盘占用），`T` / `Trend`表示趋势数值（如CPU、温度），`L`/`Log`表示日志条目，`S`/`Status`表示状态文本（如主机名、阶段）。
 - 状态名称：状态的唯一标识符，例如`CpuTemp`、`MemUsage`等。
 - 状态值：状态的具体数值，例如`65.3`、`0.5`等。
 
