@@ -15,18 +15,22 @@
 ## **NexKnit —— 由真实故事开始的回答**
 
 
-硕士期间，实验室的服务器被人开了一个端口。随后它被挂到云端，被用来通过 VSCode.Dev 访问并进行远程开发。这很 cool，并且是良好的远程开发实践。但是随后端口被嗅探到了。所有通过内网连接的服务器都被人用来挖矿。部署了 Docker 开发环境的服务器还好，但我们有一台服务器是完全不设防的——它最后不得不被重装，我们几乎一整个学期都无法访问它。
+硕士期间，实验室的服务器被人开了一个端口。随后它被挂到云端，被用来通过 VSCode.Dev 访问并进行远程开发。这很 cool，并且是良好的远程开发实践，但是它到底还是开放了公网端口，最终导致服务器被骇入。这指向了一个痛点：安全的随时随地的看一眼任意一个能联网的设备上的性能和状态。
 
-为什么我们没有做完善的防护？答案于事无补。真实环境下的服务器永远有被攻破的风险，再严密的防护也无法阻挡借由零日漏洞进行的攻击。
+它催生了我们的 NexKnit，一个专门为个人安全地监控能联网节点上任何状态而生的仪表盘。
 
-但是，它催生了我们的 NexKnit，一个专门为个人安全地监控节点上任何状态而生的仪表盘。其在数据端没有任何向公网开放的资源，只通过 HTTPs 向云端推送数据，而推送的返回值只会被丢弃，这意味着 NexKnit 在前端看到数据的同时**不会为攻击者敞开任何一丝攻击面**。同时，它面向免费额度设计的特性保证了 **7*24小时的五节点监控能力** ，足以驾驭Homelab或者小规模AI训练。
-
+- 在任意一个能联网的节点上向网关发送 `Name | Type | Info` 格式的文本即可在仪表盘上查看。
+- 无须考虑任何安全问题，只通过 HTTPs 向云端推送数据，而推送的返回值只会被丢弃。
+- 服务器上只需要部署一个仅依赖 Python3.9+及官方库的网关。没有依赖，极易审查。
+- 完全免费，7*24小时的四节点监控能力。足以驾驭Homelab或者小规模AI训练。
+- 快速集成，通过TCP监听环路，没有语言限制，你甚至可以通过curl发送数据。
+- 极易部署，三分钟内即可完整部署流程，并且无须调整节点配置。
 
 ## 🚀 在线体验
 
 对我们的功能感兴趣？直接打开我们的 Demo，看看 Nexknit 能做什么！
 
-打开网页后输入如下 `demo-key-2026` 即可看到仪表盘！如果返回节点额度耗尽，看看对应 GIF 是一个不那么理想的替代。
+打开网页后输入如下 `123456` 即可看到仪表盘！如果返回节点额度耗尽，看看对应 GIF 是一个不那么理想的替代。
 
 - **[AI 训练场](https://ai-train.demo.nexknit.workers.dev)** — 想不想躺着监视 AI 训练？一个正在模拟训练的深度学习任务，实时显示内存占用、GPU 温度、显存占用、Loss 曲线、Epoch 和训练阶段。**一站式覆盖您的训练监控需求！**
 
@@ -37,16 +41,7 @@
 
     </details>
 
-- **[运维风云](https://ops.demo.nexknit.workers.dev)** — 还是说您其实是一位独立开发者？那来看看这个。模拟一个生产 Web 服务的日常运维，CPU 负载、内存使用、请求速率、错误率、服务状态切换。**你也许可以帮助我发现模拟数据即将崩溃的预兆！**
-
-    <details>
-    <summary>📸 点击查看运维风云演示</summary>
-
-    ![运维风云 Demo](assets/OPSDemo.gif)
-
-    </details>
-
-> 注：运维风云是基于模拟数据，所以你不用真的担心服务会崩溃。
+> 注：您可以随时构建一个新的场景，提供代码并PR给我们！
 
 
 ## ⚡ 三分钟快速部署
@@ -55,25 +50,25 @@
 **第一步：部署云端信箱**
 
 在部署流程中，有两个字段需要填写：
-- **API Key**：这是你的 API 密钥，用于在本地网关和云端信箱之间通信。请使用强密码并不要分享给任何人。否则可能会导致数据泄露和免费额度被消耗。进而导致你的服务下线。
-- **Worker Name**：这是你的项目名称，用于在浏览器中访问你的仪表盘。虽然其有默认值，但是出于安全考虑，你应该自定义一个，这样可以避免被得知用户名后直接访问API。
+- **API_KEY**：这是你的 API 密钥，用于在本地网关和云端信箱之间通信。请使用强密码并不要分享给任何人。否则可能会导致数据泄露和免费额度被消耗。进而导致你的服务下线。
+- **项目名称**：这是你的项目名称，用于在浏览器中访问你的仪表盘。虽然其有默认值，但是出于安全考虑，你应该自定义一个，这样可以避免被得知用户名后直接访问API。
  
-点击下面的按钮，它会在你的 Cloudflare 账户里创建好所有云端资源。
+点击下面的按钮，它会在你的 Cloudflare 账户里创建好所有云端资源。需要注意的是，它会在当前页面中直接跳转到部署页，您需要手动返回当前页面。另外，注册账户无须绑定信用卡，无需担心。如果需要停止使用或
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/nexknit-dev/nexknit-worker)
 
 > 由于Cloudflare的偶发性故障，如果您没能一键部署或提示无法访问储存库，请向下到QA中参考手动部署的方案。我们对此深感歉意。
 > 如果您需要知道我们确切的安全模型，请向下查找“架构设计与特性”章节。另外，通过按钮直接部署的仓库会和我们的主仓库链接并在随后的每一次push中自动构建，如果您需要保持一个稳定的版本，您可以fork仓库并从Cloudflare Worker页面部署，clone仓库并从本地部署，或向下查找QA.8。
-部署完成后，你会获得一个网址，形如 `https://<Worker Name>.<Cloudflare Account>.workers.dev`。记下它。
+部署完成后，你会获得一个网址，形如 `https://<项目名称>.<Cloudflare Account>.workers.dev`。记下它。
 
 **第二步：启动本地网关**
 
-在你需要收集数据的节点打开终端，将 `<Worker Name>` 和 `<APIKey>` 替换为你自己的值，输入以下命令：
+在你需要收集数据的节点打开终端，将 `<项目名称>` 和 `<API_KEY>` 替换为你自己的值，输入以下命令：
 
 ```bash
 git clone https://github.com/nexknit-dev/nexknit-gateway
 cd nexknit-gateway
-python main_with_exmp.py --url https://<Worker Name>.<Cloudflare Account>.workers.dev --api-key <APIKey>
+python main_with_exmp.py --url https://<项目名称>.<Cloudflare Account>.workers.dev --api-key <API_KEY>
 ```
 -  这个命令会启动一个网关和一个示例采集器，其采集了包含CPUTemp在内的数据并发送到云端。但是需要注意的是，平台的差异可能会导致采集器的真实数据失效。在这种情况下，它显示的是模拟的数据。如果需要真实的数据，你可能会需要安装一个额外的库。
     ```python
@@ -84,7 +79,7 @@ python main_with_exmp.py --url https://<Worker Name>.<Cloudflare Account>.worker
 
 **第三步：在浏览器中查看数据**
 
-打开浏览器，输入 `https://<Worker Name>.<Cloudflare Account>.workers.dev` 即可查看你的数据。如果觉得好用，别忘了去看看我们的[常见QA](#常见QA)章节中的第一个问题。这会帮助你理解我们的免费额度设计！还有，别忘了点一个免费的Star！More Star, More Dev!
+打开浏览器，输入 `https://<项目名称>.<Cloudflare Account>.workers.dev` 即可查看你的数据。如果觉得好用，别忘了去看看我们的[常见QA](#常见QA)章节中的第一个问题。这会帮助你理解我们的免费额度设计！还有，别忘了点一个免费的Star！More Star, More Dev!
 
 
 - 需要注意的是，Cloudflare Workers在部署时需要时间进行初始化，时间约一分钟左右。但是我们的部署流程已针对其进行顺序优化，通常而言，您可以在部署后立刻查看数据。而如果遇到网络上的情况，请参照“常见QA”章节。
@@ -123,7 +118,7 @@ python main_with_exmp.py --url https://<Worker Name>.<Cloudflare Account>.worker
 ```bash
  Deployed nexknit-worker (8.08 sec)
  Deployed nex nexknit-worker triggers (1.13 sec)
- https://<Worker Name>.<Cloudflare Account>.workers.dev
+ https://<项目名称>.<Cloudflare Account>.workers.dev
 ```
 
  其中URL就是我们部署的Worker的URL，随后执行以下命令，随后按照提示输入API密钥：
@@ -169,7 +164,7 @@ python main_with_exmp.py --url https://<Worker Name>.<Cloudflare Account>.worker
 <details>
 <summary>5. 想要停止使用吗？</summary>
 我们的数据都在CF边缘节点，您无须担心我窃取您的数据。
-您需要登陆Cloudflare账户，打开Worker and Pages页面，删除我们先前部署的Worker，它和您命名的Worker Name相同。随后，请找到D1选项页，删除我们先前部署的数据库，它和您命名的Worker Name相同。删除后，您的数据将无法再被访问。
+您需要登陆Cloudflare账户，打开Worker and Pages页面，删除我们先前部署的Worker，它和您命名的项目名称相同。随后，请找到D1选项页，删除我们先前部署的数据库，它和您命名的项目名称相同。删除后，您的数据将无法再被访问。
 非常抱歉为您带来了不好的体验。如果您愿意帮助我们改进，请提交一个Issue，我会在36小时内回复您。
 
 </details>
@@ -198,6 +193,11 @@ python main_with_exmp.py --url https://<Worker Name>.<Cloudflare Account>.worker
 <details>
 <summary>8. 需要解除仓库和Cloudflare Worker的关联吗？</summary>
     首先，请您打开您的Cloudflare账户，打开Worker and Pages页面，点击我们先前部署的Worker，点击设置，向下寻找Git存储库，最后点击断开连接即可。
+  </details>
+
+<details>
+<summary>9. 在部署后打开网页提示不支持的安全协议怎么办？</summary>
+  如果您是新建的账户，Cloudflare可能需要时间初始化域名及证书，官方给出的预计时间是15分钟到四个小时。但是实测中往往在一到五分钟内完成。如果您在部署后打开网页提示不支持的安全协议，说明您的域名及证书初始化还没有完成。您可以考虑使用无痕模式或换台设备，但是通常而言，短暂的等待即可。这并非我们的设计问题，而是初始化域名的必然步骤，请您谅解。
   </details>
 
 

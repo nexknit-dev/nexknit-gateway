@@ -21,13 +21,20 @@ During my master's, someone opened a port on a lab server. Makes sense, right? I
 
 You might ask: why didn't we set up proper protection? There are many answers to that question, but none of them fix anything. A server in the real world always runs the risk of being breached. No amount of hardening can stop a zero-day exploit.
 
-But that incident gave birth to our NexKnit—a dashboard built specifically for safely monitoring any status on your personal nodes. It exposes absolutely zero resources to the public internet. Data is pushed just once every five seconds via HTTPS, and the response is immediately discarded. This means NexKnit lets you see data in the frontend **without opening even a sliver of attack surface**. At the same time, its free-tier-oriented design guarantees **7*24-hour monitoring for up to five nodes**, more than enough for a homelab or small-scale AI training.
+But that incident gave birth to our NexKnit—a dashboard built specifically for safely monitoring any status on your personal nodes.
+
+- Send text in `Name | Type | Info` format from any internet-connected node to the gateway, and view it on the dashboard.
+- No security concerns: data is pushed via HTTPS only, and responses are immediately discarded.
+- Deploy a gateway that only depends on Python 3.9+ and standard libraries. Zero dependencies, easy to audit.
+- Completely free: 7*24 monitoring for up to five nodes, perfect for homelabs or small-scale AI training.
+- Quick integration: TCP listener, no language restrictions—you can even send data via curl.
+- Easy deployment: complete setup in three minutes, no node configuration changes required.
 
 ## 🚀 Try It Live
 
 Curious about what it can do? Open our Demo and see Nexknit in action!
 
-Just enter the API Key `demo-key-2026` on the webpage and the dashboard appears! If the node quota is exhausted, a corresponding GIF is a less ideal alternative.
+Just enter the API_KEY `demo-key-2026` on the webpage and the dashboard appears! If the node quota is exhausted, a corresponding GIF is a less ideal alternative.
 
 - **[AI Training Field](https://ai-train.demo.nexknit.workers.dev)** — Ever wanted to monitor AI training while lying down? A simulated deep learning task, showing memory usage, GPU temperature, VRAM usage, Loss curve, Epoch, and training phase in real time. **One-stop coverage for all your training monitoring needs!**
 
@@ -55,8 +62,8 @@ Just enter the API Key `demo-key-2026` on the webpage and the dashboard appears!
 **Step One: Deploy the Cloud Mailbox**
 
 During deployment, you'll need to fill in two fields:
-- **API Key**: Your API secret, used for communication between the local gateway and the cloud mailbox. Use a strong password and don't share it. Leaking it could lead to data breaches and free quota exhaustion, which would take your service offline.
-- **Worker Name**: Your project name, used to access the dashboard in a browser. It has a default value, but for security you should customize it. This prevents anyone who knows your username from directly accessing the API.
+- **API_KEY**: Your API secret, used for communication between the local gateway and the cloud mailbox. Use a strong password and don't share it. Leaking it could lead to data breaches and free quota exhaustion, which would take your service offline.
+- **Project name**: Your project name, used to access the dashboard in a browser. It has a default value, but for security you should customize it. This prevents anyone who knows your username from directly accessing the API.
 
 Click the button below. It will create all cloud resources inside your Cloudflare account.
 
@@ -64,16 +71,16 @@ Click the button below. It will create all cloud resources inside your Cloudflar
 
 > Due to occasional Cloudflare glitches, if the one-click deploy fails or says the repo is unreachable, scroll down to the FAQ section for a manual deployment guide. We sincerely apologize for this.
 > If you need to know our exact security model, scroll down to the "Architecture Design & Characteristics" section. Additionally, the repository deployed via the button will be linked to our main repository and automatically built on subsequent pushes. If you need to maintain a stable version, you can fork the repository and deploy from the Cloudflare Worker page, clone the repository and deploy locally, or refer to FAQ.8.
-Once deployed, you'll get a URL like `https://<Worker Name>.<Cloudflare Account>.workers.dev`. Keep it handy.
+Once deployed, you'll get a URL like `https://<Project name>.<Cloudflare Account>.workers.dev`. Keep it handy.
 
 **Step Two: Launch the Local Gateway**
 
-Open a terminal on the node you want to collect data from. Replace `<Worker Name>` and `<APIKey>` with your own values, then run:
+Open a terminal on the node you want to collect data from. Replace `<Project name>` and `<APIKey>` with your own values, then run:
 
 ```bash
 git clone https://github.com/nexknit-dev/nexknit-gateway
 cd nexknit-gateway
-python main_with_exmp.py --url https://<Worker Name>.<Cloudflare Account>.workers.dev --api-key <APIKey>
+python main_with_exmp.py --url https://<Project name>.<Cloudflare Account>.workers.dev --api-key <APIKey>
 ```
 
 -  This command starts a gateway and a sample collector that gathers data including CPU temperature and sends it to the cloud. Note that platform differences might cause real data collection to fail, in which case it falls back to simulated data. If you need actual data, you might need to install an extra library.
@@ -85,7 +92,7 @@ python main_with_exmp.py --url https://<Worker Name>.<Cloudflare Account>.worker
 
 **Step Three: View Data in Your Browser**
 
-Open your browser and go to `https://<Worker Name>.<Cloudflare Account>.workers.dev` to see your data. If you find it useful, don't forget to check out the first question in our [FAQ](#faq). It'll help you understand our free-tier design! Oh, and don't forget to hit that free Star! More Star, More Dev!
+Open your browser and go to `https://<Project name>.<Cloudflare Account>.workers.dev` to see your data. If you find it useful, don't forget to check out the first question in our [FAQ](#faq). It'll help you understand our free-tier design! Oh, and don't forget to hit that free Star! More Star, More Dev!
 
 - Note: Cloudflare Workers need roughly one minute to initialize upon deployment. But our deployment flow is sequenced to optimize for this. Generally, you can view your data right after deployment. If you run into network issues, refer to the "FAQ" section.
 
@@ -118,10 +125,10 @@ You'll see logs like:
 ```bash
  Deployed nexknit-worker (8.08 sec)
  Deployed nex nexknit-worker triggers (1.13 sec)
- https://<Worker Name>.<Cloudflare Account>.workers.dev
+ https://<Project name>.<Cloudflare Account>.workers.dev
 ```
 
-That URL is the address of the deployed Worker. Then run the following and enter the API key when prompted:
+That URL is the address of the deployed Worker. Then run the following and enter the API_KEY when prompted:
 
 ```bash
   npx wrangler secret put API_KEY
@@ -137,7 +144,7 @@ You'll see logs like:
  ✨  Success! Uploaded secret API_KEY
 ```
 
-Then start the Python gateway normally, provide the URL and API key, and you can access the data directly in your browser.
+Then start the Python gateway normally, provide the URL and API_KEY, and you can access the data directly in your browser.
 </details>
 
 <details>
@@ -154,13 +161,13 @@ If you're sure your network is fine, then no need to panic—just wait a moment.
 
 <details>
 <summary>4. What if the frontend has an error or bug?</summary>
-Our frontend is fully CrashOnly by design. The only cross-page-lifetime variable is the API key used for automatic login. So you can use the simplest—and only—solution: refresh the page. If that doesn't fix it, please file an Issue. Accounting for timezone differences, I'll reply within 36 hours.
+Our frontend is fully CrashOnly by design. The only cross-page-lifetime variable is the API_KEY used for automatic login. So you can use the simplest—and only—solution: refresh the page. If that doesn't fix it, please file an Issue. Accounting for timezone differences, I'll reply within 36 hours.
 </details>
 
 <details>
 <summary>5. Want to stop using it?</summary>
 Our data is all on CF edge nodes. You don't need to worry about me stealing your data.
-You need to log into your Cloudflare account, go to the Worker and Pages page, and delete the Worker we deployed earlier—it has the same name as your Worker Name. Then, find the D1 options page and delete the database we deployed earlier—also named the same as your Worker Name. Once deleted, your data can no longer be accessed.
+You need to log into your Cloudflare account, go to the Worker and Pages page, and delete the Worker we deployed earlier—it has the same name as your Project name. Then, find the D1 options page and delete the database we deployed earlier—also named the same as your Project name. Once deleted, your data can no longer be accessed.
 If this was our fault, we're very sorry for the bad experience. If you're willing to help us improve, please file an Issue. I'll reply within 36 hours.
 </details>
 
@@ -188,6 +195,11 @@ You can view the source code of the frontend and cloud at the following URLs, an
 <details>
 <summary>8. Need to disconnect the repository from Cloudflare Worker?</summary>
 First, open your Cloudflare account, navigate to the Workers and Pages page, click on the Worker we deployed earlier, go to Settings, scroll down to Git repository, and click Disconnect.
+  </details>
+
+<details>
+<summary>9. Getting "Unsupported security protocol" error after deployment?</summary>
+If you have a newly created account, Cloudflare may need time to initialize the domain and certificate. The official estimate is 15 minutes to 4 hours, but in practice it usually completes within 1-5 minutes. If you see "Unsupported security protocol" after deployment, it means the domain and certificate initialization is still in progress. You can try incognito mode or another device, but usually just a short wait is sufficient. This is not a design issue, but an inevitable step in domain initialization. Thank you for your understanding.
   </details>
 
 ## 🏛️ Architecture Design & Characteristics
