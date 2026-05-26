@@ -32,7 +32,7 @@
 
 打开网页后输入如下 `123456` 即可看到仪表盘！如果返回节点额度耗尽，看看对应 GIF 是一个不那么理想的替代。
 
-- **[AI 训练场](https://ai-train.demo.nexknit.workers.dev)** — 想不想躺着监视 AI 训练？一个正在模拟训练的深度学习任务，实时显示内存占用、GPU 温度、显存占用、Loss 曲线、Epoch 和训练阶段。**一站式覆盖您的训练监控需求！**
+- **[AI 训练场](https://nexknit-demo-ai-train.nexknit.workers.dev/)** — 想不想躺着监视 AI 训练？一个正在模拟训练的深度学习任务，实时显示内存占用、GPU 温度、显存占用、Loss 曲线、Epoch 和训练阶段。**一站式覆盖您的训练监控需求！**
 
     <details>
     <summary>📸 点击查看 AI 训练场演示</summary>

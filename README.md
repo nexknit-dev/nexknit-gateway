@@ -45,16 +45,7 @@ Just enter the API_KEY `demo-key-2026` on the webpage and the dashboard appears!
 
     </details>
 
-- **[Ops Storm](https://ops.demo.nexknit.workers.dev)** — Or maybe you're an indie developer? Check this one out. It simulates the daily operations of a production web service: CPU load, memory usage, request rate, error rate, and service status transitions. **You might even spot the early signs of a crash in our simulated data before it happens!**
-
-    <details>
-    <summary>📸 Click to view Ops Storm demo</summary>
-
-    ![Ops Storm Demo](assets/OPSDemo.gif)
-
-    </details>
-
-> Note: Ops Storm runs on simulated data, so you don't actually need to worry about a service crash.
+> Note: You can always build a new scenario, provide code, and submit a PR to us!
 
 ## ⚡ Three-Minute Quick Deploy
 > Before you start, make sure you can connect to Cloudflare. Generally, as long as you have internet, you can reach a Cloudflare Worker. In special cases, you might need a proxy or VPN. The three minutes doesn't include Cloudflare account registration time.
@@ -178,7 +169,7 @@ Please refer to our `collector_template.py` file. The comments inside will help 
 If you want to integrate it into your project, such as an AI experiment, please refer to the `one_shot_template.py` file. The comments inside will help you understand how to integrate our collector. Note that our protocol format is:
 
 - `Type|MetricName|MetricValue`
-- Type: `I` / `Index` for appending Number, `T` / `Trend` for non-overwriting Number, `L` / `Log` for appending String, `S` / `Status` for overwriting String.
+- Type: `I` / `Index` for index values (e.g., disk usage), `T` / `Trend` for trend values (e.g., CPU, temperature), `L` / `Log` for log entries, `S` / `Status` for status text (e.g., hostname, phase).
 - MetricName: A unique identifier for the metric, such as `CpuTemp`, `MemUsage`, etc.
 - MetricValue: The specific value of the metric, such as `65.3`, `0.5`, etc.
 
