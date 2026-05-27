@@ -26,7 +26,7 @@ But that incident gave birth to our NexKnit—a dashboard built specifically for
 - Send text in `Name | Type | Info` format from any internet-connected node to the gateway, and view it on the dashboard.
 - No security concerns: data is pushed via HTTPS only, and responses are immediately discarded.
 - Deploy a gateway that only depends on Python 3.9+ and standard libraries. Zero dependencies, easy to audit.
-- Completely free: 7*24 monitoring for up to five nodes, perfect for homelabs or small-scale AI training.
+- Completely free: 7*24 monitoring for up to four nodes, perfect for homelabs or small-scale AI training.
 - Quick integration: TCP listener, no language restrictions—you can even send data via curl.
 - Easy deployment: complete setup in three minutes, no node configuration changes required.
 
@@ -34,9 +34,9 @@ But that incident gave birth to our NexKnit—a dashboard built specifically for
 
 Curious about what it can do? Open our Demo and see Nexknit in action!
 
-Just enter the API_KEY `demo-key-2026` on the webpage and the dashboard appears! If the node quota is exhausted, a corresponding GIF is a less ideal alternative.
+Just enter `123456` on the webpage and the dashboard appears! If the node quota is exhausted, a corresponding GIF is a less ideal alternative.
 
-- **[AI Training Field](https://ai-train.demo.nexknit.workers.dev)** — Ever wanted to monitor AI training while lying down? A simulated deep learning task, showing memory usage, GPU temperature, VRAM usage, Loss curve, Epoch, and training phase in real time. **One-stop coverage for all your training monitoring needs!**
+- **[AI Training Field](https://nexknit-demo-ai-train.nexknit.workers.dev/)** — Ever wanted to monitor AI training while lying down? A simulated deep learning task, showing memory usage, GPU temperature, VRAM usage, Loss curve, Epoch, and training phase in real time. **One-stop coverage for all your training monitoring needs!**
 
     <details>
     <summary>📸 Click to view AI Training Field demo</summary>
@@ -85,6 +85,8 @@ python main_with_exmp.py --url https://<Project name>.<Cloudflare Account>.worke
 
 Open your browser and go to `https://<Project name>.<Cloudflare Account>.workers.dev` to see your data. If you find it useful, don't forget to check out the first question in our [FAQ](#faq). It'll help you understand our free-tier design! Oh, and don't forget to hit that free Star! More Star, More Dev!
 
+- In the left node panel, colored time indicates the time since last update, and the time below shows the node's last update time. To delete a node, click the three dots on the right and select Delete.
+- In the current version of Nexknit, login depends on the fetch nodes API. In other words, if you haven't mounted any nodes beforehand, you won't be able to log in. If you see the time updating on the left but no cards showing on the right, refresh or click the node.
 - Note: Cloudflare Workers need roughly one minute to initialize upon deployment. But our deployment flow is sequenced to optimize for this. Generally, you can view your data right after deployment. If you run into network issues, refer to the "FAQ" section.
 
 ## FAQ

@@ -81,7 +81,8 @@ python main_with_exmp.py --url https://<项目名称>.<Cloudflare Account>.worke
 
 打开浏览器，输入 `https://<项目名称>.<Cloudflare Account>.workers.dev` 即可查看你的数据。如果觉得好用，别忘了去看看我们的[常见QA](#常见QA)章节中的第一个问题。这会帮助你理解我们的免费额度设计！还有，别忘了点一个免费的Star！More Star, More Dev!
 
-
+- 左侧的节点栏中，带颜色的时间代表着距离上一次更新的时间间隔，其下时间表示节点的最后更新时间。如果您需要删除节点，点击右侧的三个点，选择删除即可。
+- 在现版本的Nexknit中，我们登录依赖于fetch nodes接口，换句话说，如果您没有预先挂载任何节点，那么您将无法登录。如果您遇到了左侧时间更新但是右侧没有显示卡片的情况，刷新或轻点节点即可。
 - 需要注意的是，Cloudflare Workers在部署时需要时间进行初始化，时间约一分钟左右。但是我们的部署流程已针对其进行顺序优化，通常而言，您可以在部署后立刻查看数据。而如果遇到网络上的情况，请参照“常见QA”章节。
 
 
@@ -104,7 +105,7 @@ python main_with_exmp.py --url https://<项目名称>.<Cloudflare Account>.worke
 
 <details>
 <summary>2. 无法一键部署Worker？</summary>
-很抱歉，这是Cloudflare的偶发性问题，您不得不进行手动部署。好消息是，我们手动部署也并不困难，首先，请您确认您的Node.js版本为22.x以上，随后，在一个可达Cloudflare和github的节点上执行以下命令：
+这个问题有两个主要诱因，其一是Cloudflare的偶发性故障，其二是· 您的网络环境问题。您可以尝试更换一个更稳定的网络出口或VPN，但如果仍然无法访问存储库，那么您不得不进行手动部署。好消息是，我们手动部署也并不困难，首先，请您确认您的Node.js版本为22.x以上，随后，在一个可达Cloudflare和github的节点上执行以下命令，需要说明的是，这个节点并不一定是需要采集数据的节点，您只需要确保其可达Cloudflare即可：
 
  ```bash
  git clone https://github.com/nexknit-dev/nexknit-worker
