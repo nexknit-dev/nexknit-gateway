@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
-"""Nexknit 示例采集器 - 短连接版
-网关采用短连接模式：每条消息独立TCP连接，发送后立即关闭
-本采集器针对此特性优化：每批数据建立一次连接，快速发送后关闭连接"""
+"""Nexknit System Collector - Collects system metrics"""
 
 import argparse
 import os
-import socket
-import sys
-import time
 import platform
-import subprocess
 import re
+import subprocess
+import time
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any, Tuple
+from typing import Any, Dict, Optional, Tuple
+
+from collectors.base import BaseCollector
 
 
 SYSTEM = platform.system()
@@ -21,30 +19,14 @@ SYSTEM = platform.system()
 HAS_PSUTIL = False
 try:
     import psutil
+
     HAS_PSUTIL = True
 except ImportError:
     pass
 
 
-def print_banner():
-    """Print startup banner with backend info."""
-    backend = "psutil" if HAS_PSUTIL else "stdlib"
-    banner = f"""
-╔══════════════════════════════════════════════════════════════════╗
-║                    Nexknit Collector Template                    ║
-╠══════════════════════════════════════════════════════════════════╣
-║ Backend: {backend:<54}                                           ║
-║ Platform: {platform.system()} {platform.release():<45}           ║
-║ If you find this project useful, please give us a star!          ║
-╚══════════════════════════════════════════════════════════════════╝
-"""
-    print(banner)
-    if not HAS_PSUTIL:
-        print("[INFO] Running in stdlib fallback mode - some metrics may be simulated\n")
-
-
 class CPUMeter:
-    """CPU 使用率采集器"""
+    """CPU Usage Meter"""
 
     _prev_total: int = 0
     _prev_idle: int = 0
@@ -123,10 +105,7 @@ class CPUMeter:
 
 
 class MemoryMeter:
-    """内存使用率采集器"""
-
-    _cached_memory: Tuple[int, int] = (0, 0)
-    _last_update: float = 0
+    """Memory Usage Meter"""
 
     def __init__(self):
         if HAS_PSUTIL:
@@ -178,9 +157,15 @@ class MemoryMeter:
     def _windows_memory() -> float:
         try:
             import ctypes
+
             class MemStatus(ctypes.Structure):
-                _fields_ = [("dwLength", ctypes.c_uint32), ("dwMemoryLoad", ctypes.c_uint32),
-                            ("ullTotalPhys", ctypes.c_uint64), ("ullAvailPhys", ctypes.c_uint64)]
+                _fields_ = [
+                    ("dwLength", ctypes.c_uint32),
+                    ("dwMemoryLoad", ctypes.c_uint32),
+                    ("ullTotalPhys", ctypes.c_uint64),
+                    ("ullAvailPhys", ctypes.c_uint64),
+                ]
+
             m = MemStatus()
             m.dwLength = ctypes.sizeof(MemStatus)
             ctypes.windll.kernel32.GlobalMemoryStatusEx(ctypes.byref(m))
@@ -199,8 +184,8 @@ class MemoryMeter:
 
 
 class DiskMeter:
-    """磁盘使用率采集器"""
-    
+    """Disk Usage Meter"""
+
     def __init__(self):
         if SYSTEM == "Linux" or SYSTEM == "Darwin":
             self._collect = self._unix_disk
@@ -208,7 +193,7 @@ class DiskMeter:
             self._collect = self._windows_disk
         else:
             self._collect = self._fallback_disk
-    
+
     @staticmethod
     def _unix_disk() -> float:
         try:
@@ -218,34 +203,37 @@ class DiskMeter:
             return round((total - free) / total * 100, 1) if total > 0 else 0.0
         except:
             return 50.0
-    
+
     @staticmethod
     def _windows_disk() -> float:
         try:
             import ctypes
+
             free = ctypes.c_uint64(0)
             total = ctypes.c_uint64(0)
-            ctypes.windll.kernel32.GetDiskFreeSpaceExW(ctypes.c_wchar_p("C:\\"), None, ctypes.pointer(total), ctypes.pointer(free))
+            ctypes.windll.kernel32.GetDiskFreeSpaceExW(
+                ctypes.c_wchar_p("C:\\"), None, ctypes.pointer(total), ctypes.pointer(free)
+            )
             return round((total.value - free.value) / total.value * 100, 1) if total.value > 0 else 0.0
         except:
             return 50.0
-    
+
     @staticmethod
     def _fallback_disk() -> float:
         return 50.0
-    
+
     def get(self) -> float:
         return self._collect()
 
 
 class NetworkMeter:
-    """网络 I/O 采集器"""
-    
+    """Network I/O Meter"""
+
     def __init__(self):
         self._prev_sent = 0
         self._prev_recv = 0
         self._initialized = False
-        
+
         if SYSTEM == "Linux":
             self._collect = self._linux_net
         elif SYSTEM == "Darwin":
@@ -254,7 +242,7 @@ class NetworkMeter:
             self._collect = self._windows_net
         else:
             self._collect = self._fallback_net
-    
+
     @staticmethod
     def _linux_net() -> tuple:
         try:
@@ -269,7 +257,7 @@ class NetworkMeter:
             return sent, recv
         except:
             return 0, 0
-    
+
     @staticmethod
     def _darwin_net() -> tuple:
         try:
@@ -287,7 +275,7 @@ class NetworkMeter:
             return sent, recv
         except:
             return 0, 0
-    
+
     @staticmethod
     def _windows_net() -> tuple:
         try:
@@ -300,11 +288,11 @@ class NetworkMeter:
             return 0, 0
         except:
             return 0, 0
-    
+
     @staticmethod
     def _fallback_net() -> tuple:
         return 0, 0
-    
+
     def get(self) -> tuple:
         sent, recv = self._collect()
         if not self._initialized:
@@ -319,8 +307,8 @@ class NetworkMeter:
 
 
 class LoadMeter:
-    """系统负载采集器"""
-    
+    """System Load Meter"""
+
     def __init__(self):
         if SYSTEM == "Linux":
             self._collect = self._linux_load
@@ -330,7 +318,7 @@ class LoadMeter:
             self._collect = self._windows_load
         else:
             self._collect = self._fallback_load
-    
+
     @staticmethod
     def _linux_load() -> float:
         try:
@@ -338,14 +326,14 @@ class LoadMeter:
                 return float(f.read().split()[0])
         except:
             return 1.0
-    
+
     @staticmethod
     def _darwin_load() -> float:
         try:
             return float(subprocess.check_output(["sysctl", "-n", "vm.loadavg"], text=True, timeout=5).split()[0])
         except:
             return 1.0
-    
+
     @staticmethod
     def _windows_load() -> float:
         try:
@@ -355,18 +343,18 @@ class LoadMeter:
             return round(((t2.user - t1.user) + (t2.system - t1.system)) / 0.5, 2)
         except:
             return 1.0
-    
+
     @staticmethod
     def _fallback_load() -> float:
         return 1.0
-    
+
     def get(self) -> float:
         return round(self._collect(), 2)
 
 
 class CPUTempMeter:
-    """CPU 温度采集器"""
-    
+    """CPU Temperature Meter"""
+
     def __init__(self):
         if SYSTEM == "Linux":
             self._temps = self._linux_find_temps()
@@ -377,7 +365,7 @@ class CPUTempMeter:
             self._collect = self._windows_temp
         else:
             self._collect = self._fallback_temp
-    
+
     @staticmethod
     def _linux_find_temps() -> list:
         temps = []
@@ -388,7 +376,7 @@ class CPUTempMeter:
                 if temp_file.exists():
                     temps.append(str(temp_file))
         return temps
-    
+
     @staticmethod
     def _linux_temp() -> float:
         for temp_file in CPUTempMeter._linux_find_temps():
@@ -398,26 +386,26 @@ class CPUTempMeter:
             except:
                 pass
         return 60.0
-    
+
     @staticmethod
     def _darwin_temp() -> float:
         return 60.0
-    
+
     @staticmethod
     def _windows_temp() -> float:
         return 60.0
-    
+
     @staticmethod
     def _fallback_temp() -> float:
         return 60.0
-    
+
     def get(self) -> float:
         return self._collect()
 
 
 class UptimeMeter:
-    """系统运行时间采集器"""
-    
+    """System Uptime Meter"""
+
     def __init__(self):
         if SYSTEM == "Linux":
             self._collect = self._linux_uptime
@@ -427,7 +415,7 @@ class UptimeMeter:
             self._collect = self._windows_uptime
         else:
             self._collect = self._fallback_uptime
-    
+
     @staticmethod
     def _linux_uptime() -> int:
         try:
@@ -435,7 +423,7 @@ class UptimeMeter:
                 return int(float(f.read().split()[0]))
         except:
             return 0
-    
+
     @staticmethod
     def _darwin_uptime() -> int:
         try:
@@ -444,30 +432,36 @@ class UptimeMeter:
             return int(time.time() - int(match.group(1))) if match else 0
         except:
             return 0
-    
+
     @staticmethod
     def _windows_uptime() -> int:
         try:
             uptime = subprocess.check_output(
-                ["powershell", "-Command", "(Get-Date) - (Get-CimInstance Win32_OperatingSystem).LastBootUpTime | Select-Object -ExpandProperty TotalSeconds"],
-                text=True, timeout=5
+                [
+                    "powershell",
+                    "-Command",
+                    "(Get-Date) - (Get-CimInstance Win32_OperatingSystem).LastBootUpTime | Select-Object -ExpandProperty TotalSeconds",
+                ],
+                text=True,
+                timeout=5,
             ).strip()
             return int(float(uptime))
         except:
             return 0
-    
+
     @staticmethod
     def _fallback_uptime() -> int:
         return int(time.time() - 3600)
-    
+
     def get(self) -> int:
         return self._collect()
 
 
-class SystemCollector:
-    """系统指标采集器"""
-    
-    def __init__(self):
+class SystemCollector(BaseCollector):
+    """System Metrics Collector"""
+
+    def __init__(self, host: str = "127.0.0.1", port: int = 12345, interval: int = 5):
+        super().__init__(host, port, interval)
         self.cpu = CPUMeter()
         self.memory = MemoryMeter()
         self.disk = DiskMeter()
@@ -475,10 +469,17 @@ class SystemCollector:
         self.load = LoadMeter()
         self.temp = CPUTempMeter()
         self.uptime = UptimeMeter()
-    
+        self._warned_psutil = False
+
     def collect(self) -> Dict[str, Any]:
+        # Check psutil availability and warn
+        if not HAS_PSUTIL and not self._warned_psutil:
+            warning_msg = "[WARN] psutil library not installed. System metrics may be inaccurate. Install with: pip install psutil"
+            print(warning_msg)
+            self._warned_psutil = True
+
         net_sent, net_recv = self.network.get()
-        return {
+        result = {
             "cpu_percent": self.cpu.get(),
             "memory_percent": self.memory.get(),
             "disk_percent": self.disk.get(),
@@ -494,100 +495,65 @@ class SystemCollector:
             "cpu_count": os.cpu_count() or 1,
         }
 
+        # Add status warning if psutil is not available
+        if not HAS_PSUTIL:
+            result["status"] = "⚠️ Metrics may be simulated - Install psutil: pip install psutil"
 
-def send_tcp_message(host: str, port: int, message: str) -> bool:
-    """发送单条TCP消息（短连接模式）"""
-    
-    try:
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.settimeout(3)
-            sock.connect((host, port))
-            sock.sendall(message.encode("utf-8"))
-        return True
-    except Exception:
-        return False
+        return result
 
+    def metrics_to_lines(self, metrics: Dict[str, Any]) -> list:
+        lines = []
+        lines.append(self.format_metric("T", "cpu_percent", metrics["cpu_percent"]))
+        lines.append(self.format_metric("T", "memory_percent", metrics["memory_percent"]))
+        lines.append(self.format_metric("I", "disk_percent", metrics["disk_percent"]))
+        lines.append(self.format_metric("S", "hostname", metrics["hostname"]))
+        lines.append(self.format_metric("S", "os_version", metrics["os_version"]))
+        lines.append(self.format_metric("S", "uptime_seconds", metrics["uptime_seconds"]))
+        lines.append(self.format_metric("S", "cpu_count", metrics["cpu_count"]))
+        lines.append(self.format_metric("S", "platform", metrics["platform"]))
+        lines.append(self.format_metric("L", "boot_time", datetime.fromtimestamp(metrics["boot_time"]).isoformat()))
+        return lines
 
-def send_metrics_tcp(host: str, port: int, metrics: Dict[str, Any]) -> bool:
-    """通过TCP发送所有指标（短连接模式：每条消息独立连接）"""
-    
-    lines = []
-    lines.append(f"T|cpu_percent|{metrics['cpu_percent']}")
-    lines.append(f"T|memory_percent|{metrics['memory_percent']}")
-    lines.append(f"I|disk_percent|{metrics['disk_percent']}")
-    lines.append(f"S|hostname|{metrics['hostname']}")
-    lines.append(f"S|os_version|{metrics['os_version']}")
-    lines.append(f"S|uptime_seconds|{metrics['uptime_seconds']}")
-    lines.append(f"S|cpu_count|{metrics['cpu_count']}")
-    lines.append(f"S|platform|{metrics['platform']}")
-    lines.append(f"L|boot_time|{datetime.fromtimestamp(metrics['boot_time']).isoformat()}")
-    
-    success = True
-    for line in lines:
-        if not send_tcp_message(host, port, line + "\n"):
-            success = False
-    return success
+    def _on_success(self, metrics: Dict[str, Any]):
+        print(
+            f"[SEND] CPU: {metrics['cpu_percent']}% | "
+            f"MEM: {metrics['memory_percent']}% | "
+            f"DISK: {metrics['disk_percent']}%"
+        )
 
 
-def run_collector(host: str, port: int, interval: int, output_mode: str = "tcp"):
-    """运行采集主循环"""
-
-    
-    collector = SystemCollector()
-
-    print_banner()
-
-    print(f"[INFO] Target: {host}:{port}")
-    print(f"[INFO] Interval: {interval}s")
-    print(f"[INFO] Mode: {'TCP' if output_mode == 'tcp' else 'STDOUT'}\n")
-
-    consecutive_failures = 0
-    max_failures = 3
-    
-    while True:
-        try:
-            metrics = collector.collect()
-            
-            if output_mode == "tcp":
-                success = send_metrics_tcp(host, port, metrics)
-                
-                if success:
-                    consecutive_failures = 0
-                    print(
-                        f"[SEND] CPU: {metrics['cpu_percent']}% | "
-                        f"MEM: {metrics['memory_percent']}% | "
-                        f"DISK: {metrics['disk_percent']}%"
-                    )
-                else:
-                    consecutive_failures += 1
-                    print(f"[FAIL] Send failed (attempt {consecutive_failures}/{max_failures})")
-                    if consecutive_failures >= max_failures:
-                        print(f"[WARN] Too many failures, switching to stdout mode")
-                        output_mode = "stdout"
-            else:
-                print(f"T|cpu_percent|{metrics['cpu_percent']}")
-                print(f"T|memory_percent|{metrics['memory_percent']}")
-                print(f"I|disk_percent|{metrics['disk_percent']}")
-                consecutive_failures = 0
-            
-            time.sleep(interval)
-            
-        except KeyboardInterrupt:
-            print("\n[INFO] Collector stopped by user")
-            break
-        except Exception as e:
-            print(f"[ERROR] {e}")
-            time.sleep(interval)
+def print_banner():
+    """Print startup banner with backend info."""
+    backend = "psutil" if HAS_PSUTIL else "stdlib"
+    banner = f"""
+╔══════════════════════════════════════════════════════════════════╗
+║                    Nexknit System Collector                        ║
+╠══════════════════════════════════════════════════════════════════╣
+║ Backend: {backend:<54}                                           ║
+║ Platform: {platform.system()} {platform.release():<45}           ║
+║ If you find this project useful, please give us a star!          ║
+╚══════════════════════════════════════════════════════════════════╝
+"""
+    print(banner)
+    if not HAS_PSUTIL:
+        print("[INFO] Running in stdlib fallback mode - some metrics may be simulated\n")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Nexknit 示例采集器 (短连接模式)")
-    parser.add_argument("--host", default="127.0.0.1", help="网关地址 (默认: 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=12345, help="网关端口 (默认: 12345)")
-    parser.add_argument("--interval", type=int, default=5, help="采集间隔秒数 (默认: 5)")
-    parser.add_argument("--output", choices=["tcp", "stdout"], default="tcp", help="输出模式 (默认: tcp)")
+    parser = argparse.ArgumentParser(description="Nexknit System Collector")
+    parser.add_argument("--host", default="127.0.0.1", help="Gateway address (default: 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=12345, help="Gateway port (default: 12345)")
+    parser.add_argument("--interval", type=int, default=5, help="Collect interval in seconds (default: 5)")
+    parser.add_argument(
+        "--output", choices=["tcp", "stdout"], default="tcp", help="Output mode (default: tcp)"
+    )
     args = parser.parse_args()
-    run_collector(args.host, args.port, args.interval, args.output)
+
+    print_banner()
+
+    collector = SystemCollector(host=args.host, port=args.port, interval=args.interval)
+    collector._output_mode = args.output
+    collector.run()
 
 
 if __name__ == "__main__":
