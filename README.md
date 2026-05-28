@@ -66,14 +66,18 @@ Open a terminal on the node where you need to collect data, replace `<Project Na
 ```bash
 git clone https://github.com/nexknit-dev/nexknit-gateway
 cd nexknit-gateway
-python main_with_exmp.py --url https://<Project Name>.<Cloudflare Account>.workers.dev --api-key <API_KEY>
+python run_gateway.py --url https://<Project Name>.<Cloudflare Account>.workers.dev --api-key <API_KEY>
 ```
-- This command starts a gateway and an example collector that collects data including CPUTemp and sends it to the cloud. Note that platform differences may cause the collector's real data to fail. In this case, it displays simulated data. For real data, you may need to install an additional library.
-    ```python
+
+> **Tip**: If you need to specify a port, use the `--port` parameter, e.g., `python run_gateway.py --port 12345`
+
+- This command starts a gateway and multiple example collectors, including system metrics collector, HTTP alive collector, etc. Platform differences may cause some collectors to display simulated data. For real data, install additional dependencies:
+    ```bash
     pip install psutil
     ```
-- The url and api-key only need to be filled in during first launch. Our gateway will automatically generate a configuration file in the same directory as the gateway, and subsequent launches will automatically read the configuration. You can also restart the gateway with these two parameters at any time, and it will automatically update the configuration file. Additionally, you can modify other parameters in the configuration file, such as node name, to change the gateway behavior.
-- If you need to customize the collector or integrate our collector into your project, please refer to QA.6. Trust me, our integration is very simple.
+- The url and api-key only need to be filled in during first launch. Our gateway will automatically generate a configuration file in the same directory, and subsequent launches will automatically read it. You can also restart the gateway with these two parameters at any time, and it will automatically update the configuration file.
+- Collector configurations are hardcoded in `run_gateway.py`, including alert configurations and collector list.
+- If you need to customize collectors or integrate them into your project, please refer to the [Collector Development Guide](assets/COLLECTORS_GUIDE.md).
 
 **Step 3: View Data in Browser**
 
@@ -164,16 +168,28 @@ We are very sorry for the bad experience. If you are willing to help us improve,
 
 <details>
 <summary>6. Want to customize the collector or integrate into your own project?</summary>
-Please refer to our collector_template.py file, where the comments will help you understand how to customize the collector. Note that our protocol is very simple - you can directly send it to an LLM with your requirements. In tests, the LLM will generate a protocol-compliant collector based on your needs.
+We provide a complete collector development guide covering everything from getting started to advanced development:
 
-If you need to integrate it into your project, such as AI experiments, please refer to the one_shot_template.py file. The comments will help you understand how to integrate our collector. Note that our protocol consists of:
+**Quick Integration:**
+- Use `run_gateway.py` to start the gateway and built-in collectors
+- Collector configurations are hardcoded in `run_gateway.py`, including alert configurations
 
-- `Type|Status Name|Status Value`
-- Type: `I`/`Index` for index values (e.g., disk usage), `T`/`Trend` for trend values (e.g., CPU, temperature), `L`/`Log` for log entries, `S`/`Status` for status text (e.g., hostname, phase).
-- Status Name: Unique identifier for the status, e.g., `CpuTemp`, `MemUsage`.
-- Status Value: The specific value of the status, e.g., `65.3`, `0.5`.
+**Custom Collector Development:**
+Refer to the [Collector Development Guide](assets/COLLECTORS_GUIDE.md), which includes:
+- How to inherit base classes `BaseCollector` or `StorageCollector`
+- How to implement the `collect()` method
+- How to use the alert system to send alerts
+- Complete code examples and best practices
 
-You don't need to worry about spaces. You just need to send data to the port monitored by the gateway in this format, and it will automatically collect and organize it. This means you can send data from anywhere using any language.
+**Protocol Format:**
+```
+Type|Status Name|Status Value
+```
+- **Type**: `I`/`Index` for index values, `T`/`Trend` for trend values, `L`/`Log` for log entries, `S`/`Status` for status text
+- **Status Name**: Unique identifier, e.g., `CpuTemp`, `MemUsage`
+- **Status Value**: Specific value, e.g., `65.3`, `running`
+
+You can send data to the port monitored by the gateway using any language without any library dependencies.
   </details>
 
 <details>
