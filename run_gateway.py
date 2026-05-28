@@ -56,8 +56,8 @@ COLLECTORS: List[Dict[str, Any]] = [
         "class": "HttpAliveCollector",
         "enabled": True,
         "kwargs": {
-            "interval": 30,
-            "timeout": 10,
+            "interval": 5,
+            "timeout": 3,
             "urls": [
                 "https://www.google.com",
                 "https://github.com",
@@ -70,7 +70,7 @@ COLLECTORS: List[Dict[str, Any]] = [
         "class": "SystemStatsCollector",
         "enabled": False,
         "kwargs": {
-            "interval": 10,
+            "interval": 5,
             "storage_path": "./data",
             "max_cache_size": 1000,
             "retry_on_start": True,

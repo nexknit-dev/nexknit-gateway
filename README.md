@@ -10,7 +10,7 @@
 **Tired of complex configurations or worried about polluting your development environment?**
 **Concerned about introducing security risks, disrupting existing networks, or simply unable to open any devices?**
 
-![Nexknit Dashboard(Hostname masked)](assets/AIDemo.gif)
+![Nexknit Dashboard(Hostname masked)](assets/screenShotForNk.png)
 
 ## **NexKnit — Born from a True Story**
 

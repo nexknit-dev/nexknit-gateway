@@ -10,7 +10,7 @@
 **觉得配置麻烦，或者害怕污染开发环境？**
 **担心引入安全风险、破坏现有网络，或者干脆无法开放任何设备？**
 
-![Nexknit Dashboard(其中Hostname被脱敏)](assets/AIDemo.gif)
+![Nexknit Dashboard(其中Hostname被脱敏)](assets/screenShotForNk.png)
 
 ## **NexKnit —— 由真实故事开始的回答**
 
