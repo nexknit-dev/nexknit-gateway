@@ -360,6 +360,35 @@ P^3算法对抗后最终连通率 (At Least Once): 98.25%
 
 ---
 
+## 离线通知
+
+Worker 会在定时任务中检查离线节点，并通过 Cloudflare Email Routing 发送邮件告警。
+
+### 离线通知配置（可选）
+
+要在节点离线时启用邮件通知，请设置以下环境变量：
+
+```bash
+npx wrangler secret put NOTIFICATION_EMAIL  # 接收告警的邮箱地址
+npx wrangler secret put MAIL_FROM           # 发件人地址（必须在 Cloudflare Email Routing 中配置）
+```
+
+**环境变量说明**：
+
+| 变量 | 默认值 | 描述 |
+|------|--------|------|
+| `OFFLINE_THRESHOLD_MS` | `1800000`（30分钟） | 节点被判定为离线的时间阈值（毫秒） |
+| `NOTIFICATION_EMAIL` | （空） | 接收离线告警的邮箱地址（留空则禁用） |
+| `MAIL_FROM` | （空） | 通知邮件的发件人地址 |
+
+**前提条件**：您需要配置 Cloudflare Email Routing 以启用邮件发送功能。
+
+### 离线检查机制
+
+Worker 会检查离线时间超过 `OFFLINE_THRESHOLD_MS` 的节点。如果检测到离线节点且已配置邮件通知，将向 `NOTIFICATION_EMAIL` 发送告警邮件。
+
+---
+
 ## 额度模型与实测数据
 
 “免费”不是一个营销口号，而是一个经过精确计算和真实压测验证的工程承诺。以下是基于 12 小时三节点稳定运行的实测数据。

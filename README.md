@@ -350,6 +350,35 @@ Note: Unfortunately, we only saved JSON, not the log. If you need it, please con
 
 ---
 
+## Offline Notifications
+
+Worker checks for offline nodes during scheduled tasks and sends email alerts via Cloudflare Email Routing.
+
+### Offline Notification Configuration (Optional)
+
+To enable email notifications when nodes go offline, set up the following environment variables:
+
+```bash
+npx wrangler secret put NOTIFICATION_EMAIL  # Your email address to receive alerts
+npx wrangler secret put MAIL_FROM           # Sender address (must be configured in Cloudflare Email Routing)
+```
+
+**Environment Variables**:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `OFFLINE_THRESHOLD_MS` | `1800000` (30 minutes) | Time threshold in milliseconds before a node is considered offline |
+| `NOTIFICATION_EMAIL` | (empty) | Email address to receive offline alerts (leave empty to disable) |
+| `MAIL_FROM` | (empty) | Sender email address for notifications |
+
+**Prerequisite**: You need to configure Cloudflare Email Routing to enable email sending.
+
+### Offline Check
+
+The Worker checks for nodes that have been offline for longer than `OFFLINE_THRESHOLD_MS`. If any offline nodes are detected and email notifications are configured, an alert email will be sent to `NOTIFICATION_EMAIL`.
+
+---
+
 ## Quota Model and Test Data
 
 "Free" is not a marketing slogan, but an engineering promise verified through precise calculation and real stress testing. The following is based on test data from 12 hours of stable operation with three nodes.
